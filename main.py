@@ -323,7 +323,7 @@ class PostPage(BlogHandler):
                 Checking if the user is liking his own post
                 """
                 if post.author_id \
-                        != str(User.by_name(self.user.name).key().id()):
+                        != str(self.user.key().id()):
 
                     """
                     Checking the user if liked before
@@ -334,8 +334,8 @@ class PostPage(BlogHandler):
 
                         l = Likes(post=post,
                                   user=User.by_name(self.user.name))
-                        time.sleep(0.1)
                         l.put()
+                        time.sleep(0.1)
                         self.redirect('/blog/post/%s'
                                       % str(post.key().id()))
                     else:
@@ -371,7 +371,7 @@ class PostPage(BlogHandler):
                 first check if the user is trying to unlike his own post
                 """
                 if post.author_id \
-                   != str(User.by_name(self.user.name).key().id()):
+                   != str(self.user.key().id()):
 
                     """
                     Then check if the user has unliked this post before
@@ -420,7 +420,7 @@ class PostPage(BlogHandler):
                 """Checks whether the editing user and author is same"""
 
                 if post.author_id \
-                   == str(User.by_name(self.user.name).key().id()):
+                   == str(self.user.key().id()):
                     self.redirect('/editpost/%s' % str(post.key().id()))
                 else:
 
@@ -444,7 +444,7 @@ class PostPage(BlogHandler):
                 Checks whether the deleting user and author is same
                 """
                 if post.author_id \
-                   == str(User.by_name(self.user.name).key().id()):
+                   == str(self.user.key().id()):
                     self.redirect('/deletepost/%s'
                                   % str(post.key().id()))
                 else:
@@ -479,17 +479,17 @@ class PostPage(BlogHandler):
                     time.sleep(0.2)
                     self.redirect('/blog/post/%s'
                                   % str(post.key().id()))
-            else:
-                """If not throw the required errors"""
-                error = 'Enter a comment in the area'
-                self.render(
-                    'permalink.html',
-                    post=post,
-                    likes=likes,
-                    unlikes=unlikes,
-                    prev_comments=prev_comments,
-                    error=error,
-                    )
+                else:
+                    """If not throw the required errors"""
+                    error = 'Enter a comment in the area'
+                    self.render(
+                        'permalink.html',
+                        post=post,
+                        likes=likes,
+                        unlikes=unlikes,
+                        prev_comments=prev_comments,
+                        error=error,
+                        )
 
             """If the user wants to edit the comment"""
 
@@ -583,11 +583,17 @@ class EditPost(BlogHandler):
         """
         Updates the post
         """
-        if not self.user:
-            self.redirect('/blog')
-        subject = self.request.get('subject')
-        content = self.request.get('content')
-
+        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+        post = db.get(key)
+        
+        if self.user:
+            if post.author_id \
+                        != str(self.user.key().id()):
+                subject = self.request.get('subject')
+                content = self.request.get('content')
+        else:
+            self.redirect('/login')
+        
         if subject and content:
 
             """
@@ -624,8 +630,14 @@ class EditComment(BlogHandler):
 
     def post(self, post_id):
         content = self.request.get('comment_content')
-        if not self.user:
-            self.redirect('/blog')
+        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+        post = db.get(key)
+        if self.user:
+            if not post.author_id \
+                        != str(self.user.key().id()):
+                self.redirect('/login')
+        else:
+            self.redirect('/login')
         """
         Changes the data from the database if any else throws an error
         """
@@ -642,8 +654,14 @@ class EditComment(BlogHandler):
 class DeletePost(BlogHandler):
     """Deletes Post Data from the Comments Table"""
     def get(self, post_id):
-        if not self.user:
-            self.redirect('/blog')
+        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+        post = db.get(key)
+        if self.user:
+            if not post.author_id \
+                        != str(self.user.key().id()):
+                self.redirect('/login')
+        else:
+            self.redirect('/login')
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
         post = db.get(key)
         post.delete()
@@ -655,8 +673,14 @@ class DeleteComment(BlogHandler):
     Delete Comment data from the Comments Table
     """
     def get(self, post_id):
-        if not self.user:
-            self.redirect('/blog')
+        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+        post = db.get(key)
+        if self.user:
+            if not post.author_id \
+                        != str(self.user.key().id()):
+                self.redirect('/login')
+        else:
+            self.redirect('/login')
         p = Comments.get_by_id(int(post_id))
         p.delete()
         self.redirect('/blog')
