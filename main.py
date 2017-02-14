@@ -307,8 +307,6 @@ class PostPage(BlogHandler):
 
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
         post = db.get(key)
-        if not post:
-            return self.redirect('/login')
         likes = Likes.by_author(post)
         prev_comments = Comments.by_author(post)
         unlikes = unLikes.by_author(post)
@@ -580,8 +578,6 @@ class EditPost(BlogHandler):
     def get(self, post_id):
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
         post = db.get(key)
-        if not post:
-            return self.redirect('/login')
         subject = post.subject
         content = post.content
         self.render('edit.html', subject=subject, content=content)
@@ -627,8 +623,6 @@ class EditComment(BlogHandler):
         Get's the ID of the author using the post_id
         """
         p = Comments.get_by_id(int(post_id))
-        if not p:
-            return self.redirect('/login')
         content = p.comment
         self.render('editComment.html', subject=content)
 
@@ -656,7 +650,7 @@ class DeletePost(BlogHandler):
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
         p = Post.get_by_id(int(post_id), parent=blog_key())
 
-        if self.user and p and post.author_id == str(self.user.key().id()):
+        if self.user and p and p.author_id == str(self.user.key().id()):
                 p.delete()
                 self.redirect('/blog')
         else:
@@ -667,7 +661,7 @@ class DeleteComment(BlogHandler):
     """
     Delete Comment data from the Comments Table
     """
-    def get(self, post_id):
+    def get(self, comment_id):
         c = Comments.get_by_id(int(comment_id))
         if self.user and c and c.author == str(self.user.key().id()):
             c.delete()
