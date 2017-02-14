@@ -305,16 +305,16 @@ class PostPage(BlogHandler):
 
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
         post = db.get(key)
-        user_id = User.by_name(self.user.name)
         likes = Likes.by_author(post)
         prev_comments = Comments.by_author(post)
-        prev_liked = Likes.check_likes(post, user_id)
         unlikes = unLikes.by_author(post)
-        prev_unliked = unLikes.check_unlikes(post, user_id)
+        
         """Checks if the user is logged in"""
         
         if self.user:
-
+            user_id = User.by_name(self.user.name)
+            prev_liked = Likes.check_likes(post, user_id)
+            prev_unliked = unLikes.check_unlikes(post, user_id)
             """If the user clicks the like button"""
 
             if self.request.get('like'):
@@ -542,7 +542,8 @@ class PostPage(BlogHandler):
                         prev_comments=prev_comments,
                         error=error,
                         )
-        
+        else:
+            self.redirect('/login')
 
 class NewPost(BlogHandler):
     """Adding new Blog"""
@@ -584,38 +585,33 @@ class EditPost(BlogHandler):
         Updates the post
         """
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
-        post = db.get(key)
-        
-        if self.user:
-            if post.author_id \
-                        != str(self.user.key().id()):
+        p = Post.get_by_id(int(post_id), parent=blog_key())
+
+        if self.request.get('cancel'):
+                return self.redirect('/blog/post/%s' % str(p.key().id()))
+
+        """
+        Check both authentication and authorization here (as well as post existence)
+        """
+        if self.user and p and p.author_id == str(self.user.key().id()):
                 subject = self.request.get('subject')
                 content = self.request.get('content')
+                if subject and content:
+                    p.subject = subject
+                    p.content = content
+                    p.put()
+                    self.redirect('/blog/post/%s' % str(p.key().id()))
+                else:
+                    error = 'subject and content, please!'
+                    self.render('edit.html', subject=subject, content=content,
+                                error=error)
         else:
+            """
+            Otherwise send them to the login page
+            """
             self.redirect('/login')
         
-        if subject and content:
-
-            """
-            Get's the ID of the author using the post_id
-            """
-            
-            p = Post.get_by_id(int(post_id), parent=blog_key())
-            if self.request.get('cancel'):
-                self.redirect('/blog/post/%s' % str(p.key().id()))
-                
-            """
-            Changes the data from the database if any else throws an error
-            """
-            p.subject = subject
-            p.content = content
-            p.put()
-            self.redirect('/blog/post/%s' % str(p.key().id()))
-        else:
-            error = 'subject and content, please!'
-            self.render('edit.html', subject=subject, content=content,
-                        error=error)
-
+        
 
 class EditComment(BlogHandler):
     """Edit the comment if any"""
@@ -628,63 +624,49 @@ class EditComment(BlogHandler):
         content = p.comment
         self.render('editComment.html', subject=content)
 
-    def post(self, post_id):
-        content = self.request.get('comment_content')
-        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
-        post = db.get(key)
-        if self.user:
-            if not post.author_id \
-                        != str(self.user.key().id()):
-                self.redirect('/login')
+    def post(self, comment_id):
+        c = Comments.get_by_id(int(comment_id))
+        if self.user and c and c.author == str(self.user.key().id()):
+            content = self.request.get('comment_content')
+            if content:
+                c.comment = content
+                c.put()
+                self.redirect('/blog/')
+            else:
+                error = 'Add Comment, please!'
+                self.render('editComment.html', error=error)
         else:
             self.redirect('/login')
         """
         Changes the data from the database if any else throws an error
         """
-        if content:
-            p = Comments.get_by_id(int(post_id))
-            p.comment = content
-            p.put()
-            self.redirect('/blog/')
-        else:
-            error = 'Add Comment, please!'
-            self.render('editComment.html', error=error)
-
+        
 
 class DeletePost(BlogHandler):
     """Deletes Post Data from the Comments Table"""
     def get(self, post_id):
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
-        post = db.get(key)
-        if self.user:
-            if not post.author_id \
-                        != str(self.user.key().id()):
-                self.redirect('/login')
+        p = Post.get_by_id(int(post_id), parent=blog_key())
+
+        if self.user and p and post.author_id == str(self.user.key().id()):
+                p.delete()
+                self.redirect('/blog')
         else:
             self.redirect('/login')
-        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
-        post = db.get(key)
-        post.delete()
-        self.redirect('/blog')
-
+        
 
 class DeleteComment(BlogHandler):
     """
     Delete Comment data from the Comments Table
     """
     def get(self, post_id):
-        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
-        post = db.get(key)
-        if self.user:
-            if not post.author_id \
-                        != str(self.user.key().id()):
-                self.redirect('/login')
+        c = Comments.get_by_id(int(comment_id))
+        if self.user and c and c.author == str(self.user.key().id()):
+            c.delete()
+            self.redirect('/blog')
         else:
             self.redirect('/login')
-        p = Comments.get_by_id(int(post_id))
-        p.delete()
-        self.redirect('/blog')
-
+        
 
 """
 Regular expressions used to validate the username
