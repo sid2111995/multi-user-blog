@@ -280,6 +280,8 @@ class PostPage(BlogHandler):
     def get(self, post_id):
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
         post = db.get(key)
+        if not post:
+            return self.redirect('/login')
         prev_comments = Comments.by_author(post)
         error = ''
         if not post:
@@ -305,6 +307,8 @@ class PostPage(BlogHandler):
 
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
         post = db.get(key)
+        if not post:
+            return self.redirect('/login')
         likes = Likes.by_author(post)
         prev_comments = Comments.by_author(post)
         unlikes = unLikes.by_author(post)
@@ -576,6 +580,8 @@ class EditPost(BlogHandler):
     def get(self, post_id):
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
         post = db.get(key)
+        if not post:
+            return self.redirect('/login')
         subject = post.subject
         content = post.content
         self.render('edit.html', subject=subject, content=content)
@@ -621,6 +627,8 @@ class EditComment(BlogHandler):
         Get's the ID of the author using the post_id
         """
         p = Comments.get_by_id(int(post_id))
+        if not p:
+            return self.redirect('/login')
         content = p.comment
         self.render('editComment.html', subject=content)
 

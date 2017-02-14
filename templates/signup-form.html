@@ -4,54 +4,51 @@
         <h2>Signup</h2>
         <div class="login-signup">
             <form method="post">
-                <table>
-                    <tr>
-                        <td class="label">
-                            Username
-                        </td>
-                        <td>
-                            <input type="text" name="username" value="{{username}}">
-                        </td>
+                <div class="label">
+                    Username
+                </div>
+                <div class="row">
+                    <div>
+                        <input type="text" name="username" value="{{username}}">
+                    </div>
 
-                        <td class="error">
-                           {{error_username}}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td class="label">
-                            Password
-                        </td>
-                        <td>
-                            <input type="password" name="password" value="">
-                        </td>
-                        <td class="error">
-                            {{error_password}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="label">
-                            Verify Password
-                        </td>
-                        <td>
-                            <input type="password" name="verify" value="">
-                        </td>
-                        <td class="error">
-                            {{error_verify}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="label">
-                            Email (optional)
-                        </td>
-                        <td>
-                            <input type="text" name="email" value="{{email}}">
-                        </td>
-                        <td class="error">
-                            {{error_email}}
-                        </td>
-                    </tr>
-                </table>
+                    <div class="error">
+                       {{error_username}}
+                    </div>
+                </div>
+                <div class="label">
+                    Password
+                </div>
+                <div class="row">
+                    <div>
+                        <input type="password" name="password" value="">
+                    </div>
+                    <div class="error">
+                        {{error_password}}
+                    </div>
+                </div>
+                <div class="label">
+                    Verify Password
+                </div>
+                <div class="row">
+                    <div>
+                        <input type="password" name="verify" value="">
+                    </div>
+                    <div class="error">
+                        {{error_verify}}
+                    </div>
+                </div>
+                <div class="label">
+                    Email (optional)
+                </div>
+                <div class="row">
+                    <div>
+                        <input type="text" name="email" value="{{email}}">
+                    </div>
+                    <div class="error">
+                        {{error_email}}
+                    </div>
+                </div>
             <br>
             <label class="comment">
             <form>
