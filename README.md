@@ -4,7 +4,7 @@ This is a back-end code written in Python as a multi-users blog website which yo
 
 
 ## Website Deployed Using Google Cloud Platform:
-https://multibloguser.appspot.com/
+http://userblogsid.appspot.com
 
 ## Standard Python Libararies Used:
  - <b> webapp2</b>:Lightweight framework that allows you quickly build simple web applications for the Python 2.7 runtime
